@@ -12,7 +12,8 @@ function Navbar() {
     { name: "Compare", path: "/compare-products" },
     { name: "Find Sellers", path: "/sellers" },
     { name: "Knowledge", path: "/knowledge" },
-    { name: "Ask Expert", path: "/ask-expert" }
+    { name: "Ask Expert", path: "/ask-expert" },
+    { name: "Help & Support", path: "/help-support" }
   ];
 
   function closeMenu() {
