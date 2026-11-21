@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { rupees } from "../../utils/scoring";
 
 export function VerifiedBadge({ status, source }) {
@@ -9,7 +10,7 @@ export default function ProductCard({ product, score, selected, onToggleCompare,
   return (
     <article className={`card ${selected ? "card-selected" : ""}`}>
       <div className="card-head">
-        <h3>{product.name}</h3>
+        <h3><Link className="card-title" to={`/compare-products/${product.id}`}>{product.name}</Link></h3>
         <VerifiedBadge {...product.verification} />
       </div>
       <p className="muted">{product.brand} · {product.category} · {product.rating}★</p>
