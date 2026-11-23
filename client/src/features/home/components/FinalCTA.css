@@ -1,0 +1,68 @@
+
+.final-cta-section {
+  width: 100%;
+  padding: 80px 6%;
+  background: #3F5126;
+  text-align: center;
+}
+
+.final-cta-container {
+  max-width: 800px;
+  margin: auto;
+}
+
+.final-cta-container > span {
+  color: #A8B58A;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.final-cta-container h2 {
+  color: #FFFCF5;
+  font-size: 42px;
+  line-height: 1.3;
+  margin: 18px 0;
+}
+
+.final-cta-container h2 em {
+  color: #C7D4A9;
+  font-style: normal;
+}
+
+.final-cta-container p {
+  color: #E1E7D6;
+  font-size: 16px;
+  line-height: 1.8;
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+
+.final-cta-button {
+  display: inline-block;
+  background: #FFFCF5;
+  color: #3F5126;
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 6px;
+  font-weight: 700;
+  transition: 0.3s ease;
+}
+
+.final-cta-button:hover {
+  background: #A8B58A;
+}
+
+.final-cta-button span {
+  margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+  .final-cta-section {
+    padding: 60px 5%;
+  }
+
+  .final-cta-container h2 {
+    font-size: 32px;
+  }
+}
