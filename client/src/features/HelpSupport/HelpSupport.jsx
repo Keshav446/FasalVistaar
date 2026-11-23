@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./HelpSupport.css";
-
+import Footer from "../../components/layout/Footer";
+import Navbar from "../../components/layout/Navbar";
 function HelpSupport() {
 
     const [activeFAQ, setActiveFAQ] = useState(null);
@@ -59,6 +60,7 @@ function HelpSupport() {
 
     return (
         <div className="help-page">
+            <Navbar />
 
             {/* HERO SECTION */}
 

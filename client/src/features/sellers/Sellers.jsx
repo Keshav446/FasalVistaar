@@ -5,7 +5,7 @@ import { products } from "../../data/products";
 import { rankSellers } from "../../utils/scoring";
 import SellerCard from "../../components/cards/SellerCard";
 import SellerProfile from "./components/SellerProfile";
-
+import Navbar from "../../components/layout/Navbar";
 // Use standalone (no props) or from a product card (product prop).
 export default function Sellers({ product, onBack }) {
   const [productId, setProductId] = useState(product?.id || products[0].id);
@@ -25,6 +25,7 @@ export default function Sellers({ product, onBack }) {
 
   return (
     <main className="fv">
+      <Navbar />
       {onBack && <button className="btn btn-ghost back" onClick={onBack}>Back to products</button>}
       <span className="page-label"><i />FIND SELLERS</span>
       <h1>Find the best shop <span>for your requirement.</span></h1>

@@ -6,6 +6,7 @@ import ProductCard from "../../components/cards/ProductCard";
 import ProductFilters from "./components/ProductFilters";
 import ProductComparison from "./components/ProductComparison";
 import Sellers from "../sellers/Sellers";
+import Navbar from "../../components/layout/Navbar";
 
 const MAX_COMPARE = 4;
 
@@ -43,6 +44,8 @@ export default function Products() {
 
   return (
     <main className="fv">
+      <Navbar />
+
       <span className="page-label"><i />COMPARE PRODUCTS</span>
       <h1>Find the best product <span>for your crop.</span></h1>
       <p className="lead">Pick your crop and budget, then tick “Compare” on up to {MAX_COMPARE} products to see them side by side.</p>

@@ -4,7 +4,7 @@ import ProductSearch from "./Components/ProductSearch";
 import ImageUpload from "./Components/ImageUpload";
 import ManualForm from "./Components/ManualForm";
 import VerificationResult from "./Components/VerificationResult";
-
+import Navbar from "../../components/layout/Navbar";
 import "./VerificationProduct.css";
 
 function VerifyProduct() {
@@ -19,6 +19,7 @@ function VerifyProduct() {
 
   return (
     <div className="verify-page">
+      <Navbar />
       {/* Hero Section */}
       <section className="verify-hero">
         <div className="hero-tag">TRUSTED AGRICULTURE PLATFORM</div>
