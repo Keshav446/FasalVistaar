@@ -15,6 +15,22 @@ export default function ProductCard({ product, score, selected, onToggleCompare,
       </div>
       <p className="muted">{product.brand} · {product.category} · {product.rating}★</p>
       <p className="price">{rupees(product.price)} <span className="muted">/ {product.unit}</span></p>
+      {product.ingredients.length > 0 && (
+        <div className="npk" aria-label="Nutrient content">
+          {product.ingredients.map((i) => (
+            <span key={i.name} className="npk-item" title={i.name}>
+              <b>{(i.name.match(/\(([^)]+)\)/) || [, i.name])[1]}</b> {i.percent}%
+            </span>
+          ))}
+        </div>
+      )}
+      {product.specs && (
+        <div className="npk">
+          {Object.entries(product.specs).slice(0, 2).map(([k, v]) => (
+            <span key={k} className="npk-item"><b>{k}:</b> {v}</span>
+          ))}
+        </div>
+      )}
       <p className="muted small">Suits: {product.crops.join(", ")}</p>
       {score != null && (
         <>

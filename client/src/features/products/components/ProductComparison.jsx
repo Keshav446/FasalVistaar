@@ -28,16 +28,19 @@ export default function ProductComparison({ items, scores, onClose, onRemove }) 
             <Row label="Brand" render={(i) => i.brand} />
             <Row label="Price" render={(i) => `${rupees(i.price)} / ${i.unit}`} highlight={(i) => i.price === cheapest} />
             <Row label="Rating" render={(i) => `${i.rating}★`} highlight={(i) => i.rating === topRating} />
+            {ingredientNames.map((n) => (
+              <Row key={n} label={n} render={(i) => pct(i, n) != null && `${pct(i, n)}%`}
+                highlight={(i) => pct(i, n) != null && pct(i, n) === Math.max(...items.map((x) => pct(x, n) ?? 0))} />
+            ))}
+            {specNames.map((n) => <Row key={n} label={n} render={(i) => i.specs?.[n]} />)}
             <Row label="Verification" render={(i) => <VerifiedBadge {...i.verification} />} />
             <Row label="Checked against" render={(i) => i.verification.source} />
             <Row label="Suits crops" render={(i) => i.crops.join(", ")} />
-            {ingredientNames.map((n) => <Row key={n} label={n} render={(i) => pct(i, n) != null && `${pct(i, n)}%`} />)}
-            {specNames.map((n) => <Row key={n} label={n} render={(i) => i.specs?.[n]} />)}
             <Row label="Match score" render={(i) => `${scores[i.id]}%`} highlight={(i) => i.id === best.id} />
           </tbody>
         </table>
       </div>
-      <p className="muted small">Green cells show the best value in that row. Match score = crop fit, rating, verification and budget.</p>
+      <p className="muted small">Green cells show the best value in that row (lowest price, highest rating, highest nutrient %). Match score is only a summary of crop fit, rating, verification and budget.</p>
     </section>
   );
 }
