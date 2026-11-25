@@ -1,4 +1,4 @@
-import "../../styles/products.css";
+import PageShell from "../../components/layout/PageShell";
 import { useMemo, useRef, useState } from "react";
 import { products } from "../../data/products";
 import { scoreProduct } from "../../utils/scoring";
@@ -42,10 +42,12 @@ export default function Products() {
   if (shopFor) return <Sellers product={shopFor} onBack={() => setShopFor(null)} />;
 
   return (
-    <main className="fv">
-      <span className="page-label"><i />COMPARE PRODUCTS</span>
-      <h1>Find the best product <span>for your crop.</span></h1>
-      <p className="lead">Pick your crop and budget, then tick “Compare” on up to {MAX_COMPARE} products to see them side by side.</p>
+    <PageShell
+      label="COMPARE PRODUCTS"
+      title="Find the Best"
+      accent="Product for Your Crop"
+      lead={`Pick your crop and budget, then tick “Compare” on up to ${MAX_COMPARE} products to see them side by side.`}
+    >
       <ProductFilters filters={filters} setFilters={setFilters} />
 
       <div ref={compareRef}>
@@ -73,6 +75,6 @@ export default function Products() {
           </button>
         </div>
       )}
-    </main>
+    </PageShell>
   );
 }

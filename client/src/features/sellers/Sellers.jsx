@@ -1,4 +1,4 @@
-import "../../styles/products.css";
+import PageShell from "../../components/layout/PageShell";
 import { useMemo, useState } from "react";
 import { sellers } from "../../data/sellers";
 import { products } from "../../data/products";
@@ -24,11 +24,13 @@ export default function Sellers({ product, onBack }) {
   if (open) return <SellerProfile seller={open} onBack={() => setOpen(null)} />;
 
   return (
-    <main className="fv">
+    <PageShell
+      label="FIND SELLERS"
+      title="Find the Best"
+      accent="Shop for Your Requirement"
+      lead="Compare sellers by price, distance and rating to find the best deal near you."
+    >
       {onBack && <button className="btn btn-ghost back" onClick={onBack}>Back to products</button>}
-      <span className="page-label"><i />FIND SELLERS</span>
-      <h1>Find the best shop <span>for your requirement.</span></h1>
-      <p className="lead">Compare sellers by price, distance and rating to find the best deal near you.</p>
       <form className="filters" onSubmit={(e) => e.preventDefault()}>
         <select className="input" value={productId} onChange={(e) => setProductId(e.target.value)}>
           {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -44,6 +46,6 @@ export default function Sellers({ product, onBack }) {
       ) : (
         <div className="grid">{ranked.map((s, i) => <SellerCard key={s.id} seller={s} rank={sortBy === "best" ? i : -1} onOpen={setOpen} />)}</div>
       )}
-    </main>
+    </PageShell>
   );
 }

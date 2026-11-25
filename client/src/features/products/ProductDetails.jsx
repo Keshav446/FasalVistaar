@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import "../../styles/products.css";
+import PageShell from "../../components/layout/PageShell";
 import { products } from "../../data/products";
 import { sellers } from "../../data/sellers";
 import { rankSellers, rupees } from "../../utils/scoring";
 import { VerifiedBadge } from "../../components/cards/ProductCard";
 import ProductSpecifications from "./components/ProductSpecifications";
 
+// Route: /compare-products/:id
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,25 +16,27 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <main className="fv">
+      <PageShell label="PRODUCT" title="Product not found">
         <div className="empty">
           <h3>Product not found</h3>
           <p className="muted">This product may have been removed or the link is wrong.</p>
           <p style={{ marginTop: 16 }}><Link className="btn" to="/compare-products">Back to products</Link></p>
         </div>
-      </main>
+      </PageShell>
     );
   }
 
   return (
-    <main className="fv">
+    <PageShell
+      label={product.category.toUpperCase()}
+      title={product.name}
+      lead={
+        <>
+          {product.brand} · {product.rating}★ <VerifiedBadge {...product.verification} />
+        </>
+      }
+    >
       <button className="btn btn-ghost back" onClick={() => navigate(-1)}>← Back</button>
-
-      <span className="page-label"><i />{product.category.toUpperCase()}</span>
-      <h1>{product.name}</h1>
-      <p className="lead">
-        {product.brand} · {product.rating}★ <VerifiedBadge {...product.verification} />
-      </p>
 
       <div className="details-layout">
         <div>
@@ -63,6 +66,6 @@ export default function ProductDetails() {
           <Link className="btn" to="/sellers" style={{ width: "100%", marginTop: 18 }}>See all sellers</Link>
         </aside>
       </div>
-    </main>
+    </PageShell>
   );
 }

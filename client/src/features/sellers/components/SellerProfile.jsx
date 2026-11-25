@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "../../../styles/products.css";
+import PageShell from "../../../components/layout/PageShell";
 import { products } from "../../../data/products";
 import { rupees } from "../../../utils/scoring";
 import { VerifiedBadge } from "../../../components/cards/ProductCard";
@@ -13,15 +13,17 @@ export default function SellerProfile({ seller, onBack }) {
     .filter(Boolean);
 
   return (
-    <main className="fv">
+    <PageShell
+      label="SELLER"
+      title={seller.name}
+      lead={
+        <>
+          {seller.area} · {seller.rating}★{" "}
+          <VerifiedBadge status={seller.verified ? "verified" : "unverified"} source="Seller verification" />
+        </>
+      }
+    >
       <button className="btn btn-ghost back" onClick={onBack}>← Back to results</button>
-
-      <span className="page-label"><i />SELLER</span>
-      <h1>{seller.name}</h1>
-      <p className="lead">
-        {seller.area} · {seller.rating}★{" "}
-        <VerifiedBadge status={seller.verified ? "verified" : "unverified"} source="Seller verification" />
-      </p>
 
       <div className="details-layout">
         <section className="panel">
@@ -71,6 +73,6 @@ export default function SellerProfile({ seller, onBack }) {
           </p>
         </aside>
       </div>
-    </main>
+    </PageShell>
   );
 }
