@@ -52,7 +52,7 @@
 .fv .card-actions .check{justify-content:center;min-height:46px;padding:0 14px;border:1px solid var(--sage);border-radius:10px;background:#fff;font-size:14px;transition:.2s}
 .fv .card-actions .check:hover{background:var(--mint)}
 .fv .btn:focus-visible,.fv .link:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
-.fv .back{margin-bottom:26px}
+.fv .back{display:flex;width:fit-content;margin-bottom:26px}
 
 /* Comparison */
 .fv .compare{scroll-margin-top:100px;background:var(--cream);border:1px solid rgba(85,107,47,.18);border-radius:22px;padding:26px;margin:0 0 34px;box-shadow:0 15px 40px rgba(41,45,36,.1)}
@@ -105,3 +105,17 @@
 .fv .npk{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
 .fv .npk-item{background:var(--mint);color:var(--olive-dark);font-size:12.5px;padding:5px 10px;border-radius:30px}
 .fv .npk-item b{font-weight:750}
+
+/* Seller profile */
+.fv .stock-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.fv .stock-item{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:16px 18px;background:#fff;border:1px solid rgba(85,107,47,.14);border-radius:14px;transition:.25s}
+.fv .stock-item:hover{border-color:var(--olive);box-shadow:0 8px 24px rgba(41,45,36,.09)}
+.fv .stock-price{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right;flex-shrink:0}
+.fv .stock-price strong{font-size:20px;letter-spacing:-.5px;color:var(--olive-dark)}
+.fv .stock-price .badge{margin-left:0}
+.fv .info-list{margin:14px 0 0;display:grid;gap:12px}
+.fv .info-list div{display:flex;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid rgba(168,181,138,.45)}
+.fv .info-list div:last-child{border-bottom:0;padding-bottom:0}
+.fv .info-list dt{color:var(--muted);font-size:14px}
+.fv .info-list dd{margin:0;font-weight:650;font-size:14px;text-align:right}
+@media(max-width:480px){.fv .stock-item{flex-direction:column}.fv .stock-price{align-items:flex-start;text-align:left}}
