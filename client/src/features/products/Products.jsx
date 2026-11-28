@@ -1,45 +1,59 @@
+import { useEffect, useRef, useState } from "react";
 import PageShell from "../../components/layout/PageShell";
-import { useMemo, useRef, useState } from "react";
-import { products } from "../../data/products";
-import { scoreProduct } from "../../utils/scoring";
 import ProductCard from "../../components/cards/ProductCard";
+import Notice from "../../components/common/Notice";
 import ProductFilters from "./components/ProductFilters";
 import ProductComparison from "./components/ProductComparison";
 import Sellers from "../sellers/Sellers";
+import { getProducts } from "../../services/productService";
 
 const MAX_COMPARE = 4;
 
 export default function Products() {
   const [filters, setFilters] = useState({ q: "", crop: "", category: "", budget: "", verifiedOnly: false });
-  const [compareIds, setCompareIds] = useState([]);
+  const [state, setState] = useState({ loading: true, error: "", items: [] });
+  const [retry, setRetry] = useState(0);
+  const [compareList, setCompareList] = useState([]); // full product objects, so they survive filter changes
   const [showCompare, setShowCompare] = useState(false);
-  const [shopFor, setShopFor] = useState(null); // product whose sellers are shown
+  const [shopFor, setShopFor] = useState(null);
   const compareRef = useRef(null);
 
-  // Show the comparison and scroll up to it.
+  // Load products from the API whenever a filter changes (small delay so typing doesn't spam the server)
+  useEffect(() => {
+    let cancelled = false;
+    setState((s) => ({ ...s, loading: true, error: "" }));
+    const timer = setTimeout(() => {
+      getProducts({
+        search: filters.q.trim(),
+        crop: filters.crop,
+        category: filters.category,
+        maxPrice: filters.budget,
+        verifiedOnly: filters.verifiedOnly ? "true" : "",
+        limit: 50,
+      })
+        .then((r) => !cancelled && setState({ loading: false, error: "", items: r.data }))
+        .catch((e) => !cancelled && setState({ loading: false, error: e.message, items: [] }));
+    }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [filters, retry]);
+
+  const toggle = (id) =>
+    setCompareList((list) => {
+      if (list.some((p) => p.id === id)) return list.filter((p) => p.id !== id);
+      if (list.length >= MAX_COMPARE) return list;
+      const product = state.items.find((p) => p.id === id);
+      return product ? [...list, product] : list;
+    });
+
   const openCompare = () => {
     setShowCompare(true);
     requestAnimationFrame(() => compareRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
 
-  const results = useMemo(() => {
-    const ctx = { crop: filters.crop, budget: Number(filters.budget) || 0 };
-    return products
-      .filter((p) => !filters.q || `${p.name} ${p.brand}`.toLowerCase().includes(filters.q.toLowerCase()))
-      .filter((p) => !filters.crop || p.crops.includes(filters.crop))
-      .filter((p) => !filters.category || p.category === filters.category)
-      .filter((p) => !ctx.budget || p.price <= ctx.budget)
-      .filter((p) => !filters.verifiedOnly || p.verification.status === "verified")
-      .map((p) => ({ p, score: scoreProduct(p, ctx) }))
-      .sort((a, b) => b.score - a.score);
-  }, [filters]);
-
-  const scores = Object.fromEntries(results.map(({ p, score }) => [p.id, score]));
-  const toggle = (id) => setCompareIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
-  const compareItems = products.filter((p) => compareIds.includes(p.id));
-  compareItems.forEach((p) => { if (scores[p.id] == null) scores[p.id] = scoreProduct(p, {}); });
-
   if (shopFor) return <Sellers product={shopFor} onBack={() => setShopFor(null)} />;
+
+  const compareIds = compareList.map((p) => p.id);
+  const scores = Object.fromEntries(compareList.map((p) => [p.id, p.matchScore]));
 
   return (
     <PageShell
@@ -51,18 +65,29 @@ export default function Products() {
       <ProductFilters filters={filters} setFilters={setFilters} />
 
       <div ref={compareRef}>
-        {showCompare && compareItems.length >= 2 && (
-          <ProductComparison items={compareItems} scores={scores} onClose={() => setShowCompare(false)} onRemove={toggle} />
+        {showCompare && compareList.length >= 2 && (
+          <ProductComparison items={compareList} scores={scores} onClose={() => setShowCompare(false)} onRemove={toggle} />
         )}
       </div>
 
-      {results.length === 0 ? (
-        <div className="empty"><h3>No products match</h3><p>Try removing a filter or raising your budget.</p></div>
+      {state.loading ? (
+        <Notice loading />
+      ) : state.error ? (
+        <Notice title="Could not load products" text={state.error} action={<button className="btn" onClick={() => setRetry((n) => n + 1)}>Try again</button>} />
+      ) : state.items.length === 0 ? (
+        <Notice title="No products match" text="Try removing a filter or raising your budget." />
       ) : (
         <div className="grid">
-          {results.map(({ p, score }) => (
-            <ProductCard key={p.id} product={p} score={score} selected={compareIds.includes(p.id)}
-              disableCompare={compareIds.length >= MAX_COMPARE} onToggleCompare={toggle} onOpen={setShopFor} />
+          {state.items.map((p) => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              score={p.matchScore}
+              selected={compareIds.includes(p.id)}
+              disableCompare={compareIds.length >= MAX_COMPARE}
+              onToggleCompare={toggle}
+              onOpen={setShopFor}
+            />
           ))}
         </div>
       )}

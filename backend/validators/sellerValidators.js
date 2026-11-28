@@ -14,7 +14,7 @@ const sellerUpdateBody = sellerBody
 const stockBody = z.object({
   product: z.string().length(24, "Invalid product id"),
   price: z.number().min(0),
-  inStock: z.boolean().optional(),
+  quantity: z.number().int().min(0).max(1000000),
 });
 
 const sellerListQuery = z.object({

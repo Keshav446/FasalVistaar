@@ -5,7 +5,8 @@ const stockSchema = new mongoose.Schema(
   {
     product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
     price: { type: Number, required: true, min: 0 },
-    inStock: { type: Boolean, default: true },
+    // How many units the shop has. 0 = out of stock (users see this).
+    quantity: { type: Number, required: true, min: 0, default: 0 },
   },
   { _id: false }
 );

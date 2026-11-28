@@ -35,9 +35,20 @@ const listSellers = async (req, res) => {
   res.json({ success: true, data: sellers, page, limit, total, pages: Math.ceil(total / limit) });
 };
 
-// GET /api/sellers/:id   (with details of every product in stock)
+const STOCK_FIELDS = "name brand unit category price ingredients";
+
+// GET /api/sellers/mine   (seller/admin) – the logged-in user's own shop, or null if none yet
+const getMySeller = async (req, res) => {
+  const seller = await Seller.findOne({ owner: req.user.id })
+    .populate("stock.product", STOCK_FIELDS)
+    .lean();
+  res.json({ success: true, data: seller });
+};
+
 const getSeller = async (req, res) => {
-  const seller = await Seller.findById(req.params.id).populate("stock.product", "name brand unit category");
+  const seller = await Seller.findById(req.params.id)
+    .populate("stock.product", STOCK_FIELDS)
+    .lean();
   if (!seller) throw new ApiError(404, "Seller not found");
   res.json({ success: true, data: seller });
 };
@@ -74,22 +85,23 @@ const deleteSeller = async (req, res) => {
   res.json({ success: true, message: "Seller deleted" });
 };
 
-// PUT /api/sellers/:id/stock   body: { product, price, inStock } – add or update one product
+// PUT /api/sellers/:id/stock   body: { product, price, quantity } – add a product or update its price/quantity
 const upsertStock = async (req, res) => {
   const seller = await getOwnedSeller(req);
-  const { product, price, inStock = true } = req.body;
+  const { product, price, quantity } = req.body;
 
   if (!(await Product.exists({ _id: product }))) throw new ApiError(404, "Product not found");
 
   const existing = seller.stock.find((s) => s.product.equals(product));
   if (existing) {
     existing.price = price;
-    existing.inStock = inStock;
+    existing.quantity = quantity;
   } else {
-    seller.stock.push({ product, price, inStock });
+    seller.stock.push({ product, price, quantity });
   }
 
   await seller.save();
+  await seller.populate("stock.product", STOCK_FIELDS);
   clearCache();
   res.json({ success: true, data: seller });
 };
@@ -99,8 +111,9 @@ const removeStock = async (req, res) => {
   const seller = await getOwnedSeller(req);
   seller.stock = seller.stock.filter((s) => !s.product.equals(req.params.productId));
   await seller.save();
+  await seller.populate("stock.product", STOCK_FIELDS);
   clearCache();
   res.json({ success: true, data: seller });
 };
 
-module.exports = { listSellers, getSeller, createSeller, updateSeller, deleteSeller, upsertStock, removeStock };
+module.exports = { listSellers, getMySeller, getSeller, createSeller, updateSeller, deleteSeller, upsertStock, removeStock };

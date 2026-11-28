@@ -10,6 +10,9 @@ const { sellerBody, sellerUpdateBody, stockBody, sellerListQuery } = require("..
 
 // Public (cached)
 router.get("/", validate(sellerListQuery, "query"), cacheResponse(60), c.listSellers);
+// Logged-in seller's own shop (private, not cached). Must stay above "/:id".
+router.get("/mine", protect, authorize("seller", "admin"), c.getMySeller);
+
 router.get("/:id", cacheResponse(60), c.getSeller);
 
 // Seller / admin

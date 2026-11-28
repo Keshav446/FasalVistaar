@@ -65,7 +65,8 @@ const getProductSellers = async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) throw new ApiError(404, "Product not found");
 
-  const sellers = await Seller.find({ stock: { $elemMatch: { product: product._id, inStock: true } } });
+  // Only shops that still have this product in stock (quantity above 0)
+  const sellers = await Seller.find({ stock: { $elemMatch: { product: product._id, quantity: { $gt: 0 } } } });
 
   let entries = sellers.map((s) => {
     const stock = s.stock.find((x) => x.product.equals(product._id));
@@ -78,6 +79,8 @@ const getProductSellers = async (req, res) => {
       rating: s.rating,
       verified: s.verified,
       price: stock.price,
+      quantity: stock.quantity,
+      unit: product.unit,
       distanceKm: knowsPlace ? distanceKm(lat, lng, s.location.lat, s.location.lng) : null,
     };
   });

@@ -120,3 +120,33 @@
 .fv .info-list dt{color:var(--muted);font-size:14px}
 .fv .info-list dd{margin:0;font-weight:650;font-size:14px;text-align:right}
 @media(max-width:480px){.fv .stock-item{flex-direction:column}.fv .stock-price{align-items:flex-start;text-align:left}}
+
+/* Loading, status badges, banners */
+.fv .spinner{display:block;width:30px;height:30px;margin:0 auto 12px;border:3px solid var(--mint);border-top-color:var(--olive);border-radius:50%;animation:fv-spin .8s linear infinite}
+@keyframes fv-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.fv .spinner{animation:none}}
+.fv .badge-off{background:#E8E6DF;color:var(--muted)}
+.fv .stock-off{opacity:.65}
+.fv .banner{padding:12px 16px;border-radius:12px;margin-bottom:18px;font-size:14px;font-weight:600}
+.fv .banner-ok{background:#DCE7D1;color:var(--ok)}
+.fv .banner-err{background:#F5DEDA;color:var(--err)}
+.fv .banner-warn{background:#F6EBD3;color:var(--warn)}
+
+/* Seller dashboard */
+.fv .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:24px}
+.fv .stat{background:var(--cream);border:1px solid rgba(85,107,47,.12);border-radius:16px;padding:18px 20px;box-shadow:0 8px 28px rgba(41,45,36,.06)}
+.fv .stat strong{display:block;font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--olive-dark)}
+.fv .stat span{color:var(--muted);font-size:13px}
+.fv .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;align-items:start;margin-top:14px}
+.fv .field{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:var(--olive-dark)}
+.fv .field .input{font-weight:400}
+.fv .field-error{color:var(--err);font-size:12.5px;font-weight:600}
+.fv .inline-fields{display:flex;flex-wrap:wrap;gap:10px}
+.fv .inline-fields .input{flex:1 1 130px}
+.fv .form-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fv .add-form{align-items:end}
+.fv .input-sm{height:42px;min-width:90px;max-width:140px}
+.fv .dash-table{min-width:680px}
+.fv .dash-table th,.fv .dash-table td{vertical-align:middle}
+.fv .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+.fv .row-actions .btn{min-height:40px;padding:0 14px}

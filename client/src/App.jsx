@@ -6,6 +6,8 @@ import HelpSupport from "./features/HelpSupport/HelpSupport";
 import Products from "./features/products/Products";
 import Sellers from "./features/sellers/Sellers";
 import Knowledge from "./features/knowledge/Knowledge";
+import ProductDetails from "./features/products/ProductDetails";
+import SellerDashboard from "./dashboards/seller/sellerDashboard";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
         <Route path="/compare-products" element={<Products />} />
         <Route path="/sellers" element={<Sellers />} />
         <Route path = "/knowledge" element ={ <Knowledge/>} />
+        <Route path="/compare-products/:id" element={<ProductDetails />} />
+        <Route path="/seller-dashboard" element={<SellerDashboard />} />
       </Routes>
     </BrowserRouter>
   );

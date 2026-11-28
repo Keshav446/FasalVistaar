@@ -1,25 +1,59 @@
+import { useEffect, useMemo, useState } from "react";
 import PageShell from "../../components/layout/PageShell";
-import { useMemo, useState } from "react";
-import { sellers } from "../../data/sellers";
-import { products } from "../../data/products";
-import { rankSellers } from "../../utils/scoring";
 import SellerCard from "../../components/cards/SellerCard";
+import Notice from "../../components/common/Notice";
 import SellerProfile from "./components/SellerProfile";
+import { getProducts, getProductSellers } from "../../services/productService";
 
-// Use standalone (no props) or from a product card (product prop).
+// Works on its own (/sellers) or opened from a product card (product prop).
 export default function Sellers({ product, onBack }) {
-  const [productId, setProductId] = useState(product?.id || products[0].id);
+  const [catalog, setCatalog] = useState({ loading: true, error: "", items: [] });
+  const [productId, setProductId] = useState(product?.id || "");
   const [sortBy, setSortBy] = useState("best");
   const [maxKm, setMaxKm] = useState("");
+  const [where, setWhere] = useState(null); // { lat, lng } once the user shares their location
+  const [geoMsg, setGeoMsg] = useState("");
+  const [res, setRes] = useState({ loading: false, error: "", items: [] });
+  const [retry, setRetry] = useState(0);
   const [open, setOpen] = useState(null);
 
-  const ranked = useMemo(() => {
-    let list = rankSellers(sellers, productId).filter((s) => !maxKm || s.distanceKm <= Number(maxKm));
-    if (sortBy === "price") list = [...list].sort((a, b) => a.price - b.price);
-    if (sortBy === "distance") list = [...list].sort((a, b) => a.distanceKm - b.distanceKm);
-    if (sortBy === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
-    return list;
-  }, [productId, sortBy, maxKm]);
+  // Products for the dropdown
+  useEffect(() => {
+    getProducts({ limit: 50, sort: "rating" })
+      .then((r) => {
+        setCatalog({ loading: false, error: "", items: r.data });
+        setProductId((id) => id || r.data[0]?.id || "");
+      })
+      .catch((e) => setCatalog({ loading: false, error: e.message, items: [] }));
+  }, [retry]);
+
+  // Shops that have the chosen product in stock (live from the sellers' dashboards)
+  useEffect(() => {
+    if (!productId) return;
+    let cancelled = false;
+    setRes((s) => ({ ...s, loading: true, error: "" }));
+    getProductSellers(productId, { lat: where?.lat, lng: where?.lng, maxKm: where ? maxKm : "" })
+      .then((r) => !cancelled && setRes({ loading: false, error: "", items: r.data }))
+      .catch((e) => !cancelled && setRes({ loading: false, error: e.message, items: [] }));
+    return () => { cancelled = true; };
+  }, [productId, where, maxKm, retry]);
+
+  const list = useMemo(() => {
+    const items = [...res.items];
+    if (sortBy === "price") items.sort((a, b) => a.price - b.price);
+    if (sortBy === "distance") items.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
+    if (sortBy === "rating") items.sort((a, b) => b.rating - a.rating);
+    return items;
+  }, [res.items, sortBy]);
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) return setGeoMsg("Your browser does not support location.");
+    setGeoMsg("Finding your location…");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setWhere({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setGeoMsg(""); },
+      () => setGeoMsg("Could not get your location. Allow location access and try again.")
+    );
+  };
 
   if (open) return <SellerProfile seller={open} onBack={() => setOpen(null)} />;
 
@@ -28,23 +62,41 @@ export default function Sellers({ product, onBack }) {
       label="FIND SELLERS"
       title="Find the Best"
       accent="Shop for Your Requirement"
-      lead="Compare sellers by price, distance and rating to find the best deal near you."
+      lead="Compare shops by price, distance and rating. Only shops that currently have the product in stock are shown."
     >
-      {onBack && <button className="btn btn-ghost back" onClick={onBack}>Back to products</button>}
+      {onBack && <button className="btn btn-ghost back" onClick={onBack}>← Back to products</button>}
+
       <form className="filters" onSubmit={(e) => e.preventDefault()}>
-        <select className="input" value={productId} onChange={(e) => setProductId(e.target.value)}>
-          {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+        <select className="input" aria-label="Product" value={productId} onChange={(e) => setProductId(e.target.value)}>
+          {catalog.items.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <select className="input" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="best">Best overall</option><option value="price">Lowest price</option>
-          <option value="distance">Nearest</option><option value="rating">Top rated</option>
+        <select className="input" aria-label="Sort by" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="best">Best overall</option>
+          <option value="price">Lowest price</option>
+          <option value="distance">Nearest</option>
+          <option value="rating">Top rated</option>
         </select>
-        <input className="input" type="number" min="1" placeholder="Within km" value={maxKm} onChange={(e) => setMaxKm(e.target.value)} />
+        {where ? (
+          <>
+            <input className="input" type="number" min="1" placeholder="Within km" aria-label="Within km" value={maxKm} onChange={(e) => setMaxKm(e.target.value)} />
+            <button type="button" className="btn btn-ghost" onClick={() => { setWhere(null); setMaxKm(""); }}>Clear location</button>
+          </>
+        ) : (
+          <button type="button" className="btn btn-ghost" onClick={useMyLocation}>Use my location</button>
+        )}
       </form>
-      {ranked.length === 0 ? (
-        <div className="empty"><h3>No shop found</h3><p>No seller stocks this product within that distance. Increase the distance.</p></div>
+      {geoMsg && <p className="muted small" role="status" style={{ marginBottom: 16 }}>{geoMsg}</p>}
+
+      {catalog.loading || res.loading ? (
+        <Notice loading />
+      ) : catalog.error || res.error ? (
+        <Notice title="Could not load shops" text={catalog.error || res.error} action={<button className="btn" onClick={() => setRetry((n) => n + 1)}>Try again</button>} />
+      ) : list.length === 0 ? (
+        <Notice title="No shop found" text="No shop has this product in stock right now (or none within that distance)." />
       ) : (
-        <div className="grid">{ranked.map((s, i) => <SellerCard key={s.id} seller={s} rank={sortBy === "best" ? i : -1} onOpen={setOpen} />)}</div>
+        <div className="grid">
+          {list.map((s, i) => <SellerCard key={s.id} seller={s} rank={sortBy === "best" ? i : -1} onOpen={setOpen} />)}
+        </div>
       )}
     </PageShell>
   );

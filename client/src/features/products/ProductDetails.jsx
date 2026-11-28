@@ -1,27 +1,45 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import PageShell from "../../components/layout/PageShell";
-import { products } from "../../data/products";
-import { sellers } from "../../data/sellers";
-import { rankSellers, rupees } from "../../utils/scoring";
+import Notice from "../../components/common/Notice";
 import { VerifiedBadge } from "../../components/cards/ProductCard";
 import ProductSpecifications from "./components/ProductSpecifications";
+import { getProduct, getProductSellers } from "../../services/productService";
+import { rupees } from "../../utils/scoring";
 
 // Route: /compare-products/:id
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product = products.find((p) => p.id === id);
-  const topSellers = useMemo(() => (product ? rankSellers(sellers, product.id).slice(0, 3) : []), [product]);
+  const [state, setState] = useState({ loading: true, error: "", status: 0, product: null, sellers: [] });
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setState({ loading: true, error: "", status: 0, product: null, sellers: [] });
+    Promise.all([getProduct(id), getProductSellers(id)])
+      .then(([p, s]) => !cancelled && setState({ loading: false, error: "", status: 0, product: p.data, sellers: s.data }))
+      .catch((e) => !cancelled && setState({ loading: false, error: e.message, status: e.status || 0, product: null, sellers: [] }));
+    return () => { cancelled = true; };
+  }, [id, retry]);
+
+  const { product, sellers } = state;
+
+  if (state.loading) return <PageShell label="PRODUCT" title="Loading…"><Notice loading /></PageShell>;
 
   if (!product) {
+    const missing = state.status === 404 || state.status === 400;
     return (
-      <PageShell label="PRODUCT" title="Product not found">
-        <div className="empty">
-          <h3>Product not found</h3>
-          <p className="muted">This product may have been removed or the link is wrong.</p>
-          <p style={{ marginTop: 16 }}><Link className="btn" to="/compare-products">Back to products</Link></p>
-        </div>
+      <PageShell label="PRODUCT" title={missing ? "Product not found" : "Something went wrong"}>
+        <Notice
+          title={missing ? "Product not found" : "Could not load this product"}
+          text={missing ? "This product may have been removed or the link is wrong." : state.error}
+          action={
+            missing
+              ? <Link className="btn" to="/compare-products">Back to products</Link>
+              : <button className="btn" onClick={() => setRetry((n) => n + 1)}>Try again</button>
+          }
+        />
       </PageShell>
     );
   }
@@ -30,33 +48,27 @@ export default function ProductDetails() {
     <PageShell
       label={product.category.toUpperCase()}
       title={product.name}
-      lead={
-        <>
-          {product.brand} · {product.rating}★ <VerifiedBadge {...product.verification} />
-        </>
-      }
+      lead={<>{product.brand} · {product.rating}★ <VerifiedBadge {...product.verification} /></>}
     >
       <button className="btn btn-ghost back" onClick={() => navigate(-1)}>← Back</button>
 
       <div className="details-layout">
-        <div>
-          <ProductSpecifications product={product} />
-        </div>
+        <div><ProductSpecifications product={product} /></div>
 
         <aside className="panel buy-box">
           <p className="muted small">Typical price</p>
           <p className="price">{rupees(product.price)} <span className="muted">/ {product.unit}</span></p>
 
           <h2 style={{ marginTop: 22, fontSize: 18 }}>Best shops for this product</h2>
-          {topSellers.length === 0 ? (
-            <p className="muted small" style={{ marginTop: 8 }}>No seller has listed this product yet.</p>
+          {sellers.length === 0 ? (
+            <p className="muted small" style={{ marginTop: 8 }}>No shop has this in stock right now.</p>
           ) : (
             <ul className="seller-list">
-              {topSellers.map((s, i) => (
+              {sellers.slice(0, 3).map((s, i) => (
                 <li key={s.id}>
                   <div>
                     <strong>{s.name}</strong> {i === 0 && <span className="badge badge-ok">Best match</span>}
-                    <p className="muted small">{s.area} · {s.distanceKm} km · {s.rating}★</p>
+                    <p className="muted small">{s.area}{s.rating > 0 && ` · ${s.rating}★`} · {s.quantity <= 10 ? `only ${s.quantity} left` : `${s.quantity} in stock`}</p>
                   </div>
                   <strong>{rupees(s.price)}</strong>
                 </li>
